@@ -7,15 +7,13 @@ Guidance for Claude Code when working in `am-semnat-sdk/android/`.
 Standalone Android library for reading + signing with Romanian CEI eID cards
 over NFC. Maven Central target: `ro.amsemnat:am-semnat-sdk`. Extracted from
 `../../am-semnat/modules/expo-cei-reader/android/`, which still ships in the
-app and runs in parallel until the integration phase
-(`../../romania-eid-research/sdk/open-source-sdk-plan.md`).
+app and runs in parallel until the `am-semnat` app finishes migrating to
+this SDK.
 
-The public surface is **frozen** in
-`../../romania-eid-research/sdk/sdk-api-surface.md`. Don't change type names,
-method signatures, enum variants, or `AmSemnatError` cases without updating
-that doc first — the iOS / Expo / verifier siblings (future
-`../ios/`, `../expo/`, `../verifier-node/`) ship API-compatible symbols and
-have to land changes in lockstep through 0.x.
+The public surface is **frozen** for 0.x. Don't change type names, method
+signatures, enum variants, or `AmSemnatError` cases without updating the
+iOS / Expo / verifier siblings (future `../ios/`, `../expo/`,
+`../verifier-node/`) in lockstep — they ship API-compatible symbols.
 
 ## Build & test
 
