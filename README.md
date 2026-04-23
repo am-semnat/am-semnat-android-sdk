@@ -172,8 +172,8 @@ Two questions with two different answers:
 - **Does the card data match what MAI signed?** → Passive Authentication. The
   SDK does **not** set a `passiveAuthenticated` flag — any flag the client
   writes can be forged by a compromised client. For load-bearing checks (KYC,
-  qualified signing), verify **server-side** against your own MAI CSCA
-  masterlist.
+  qualified signing), verify **server-side** against your own CSCA
+  trust store.
 
   The SDK exposes raw bytes on `RomanianIdentity` (`rawSod`, `rawDg1`,
   `rawDg2`, `rawDg14`) that you can upload and verify wherever the decision
@@ -186,8 +186,8 @@ Two questions with two different answers:
   caller's problem.
 
   ```kotlin
-  // `identity` from AmSemnat.readIdentity(...); `cscaAnchors` is your MAI
-  // CSCA masterlist as a list of DER-encoded X.509 certificates.
+  // `identity` from AmSemnat.readIdentity(...); `cscaAnchors` is your
+  // `CSCA Romania` trust store as a list of DER-encoded X.509 certificates.
   val result = AmSemnat.verifyPassiveOffline(
       rawSod = identity.rawSod ?: error("SOD missing"),
       dataGroups = buildMap {
@@ -206,10 +206,24 @@ Two questions with two different answers:
   }
   ```
 
-Neither the SDK nor the companion verifier bundles any MAI CSCA certificates.
-Fetch the current trust chain from MAI's official CEI cert download page:
-<https://hub.mai.gov.ro/cei/info/descarca-cert>. Your app owns freshness and
-revocation — re-fetch on a cadence appropriate for your trust window.
+Neither the SDK nor the companion verifier bundles any certificates.
+Two Romanian authorities publish the certs the SDK interacts with, one
+per PKI:
+
+- **DGP — `CSCA Romania`**, published at
+  <https://pasapoarte.mai.gov.ro/csca.html>. Self-signed ICAO CSCA that
+  issues the Document Signer embedded in the eMRTD SOD. This is the
+  trust anchor for `AmSemnat.verifyPassiveOffline(...)`. Use the
+  self-signed certificate; the link certificates on that page are only
+  useful when migrating trust from a prior CSCA key.
+- **DGEP — `RO CEI MAI Root-CA` / `Sub-CA`**, published at
+  <https://hub.mai.gov.ro/cei/info/descarca-cert>. Issues the
+  per-citizen signing certificates stored in the CEI applet and used by
+  `AmSemnat.sign(...)`; those are the anchors for verifying the PAdES
+  signatures the SDK produces.
+
+Your app owns freshness and revocation — re-fetch on a cadence
+appropriate for your trust window.
 
 ## Licensing and attribution
 
