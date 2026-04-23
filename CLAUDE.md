@@ -65,7 +65,7 @@ internal exception types past that boundary.
 ## Gotchas
 
 - **DG iteration follows enum declaration order**
-  (`DG1 → DG2 → DG7 → DG11 → DG14`). DG14 must be read before chip auth;
+  (`DG1 → DG2 → DG7 → DG14`). DG14 must be read before chip auth;
   preserve that if you reorder. Active Authentication (DG15) is
   deliberately out of 0.x — see the "What's not in 0.x" subsection of
   `sdk-api-surface.md` before reintroducing it.

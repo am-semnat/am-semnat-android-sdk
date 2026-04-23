@@ -128,7 +128,6 @@ AmSemnat.readIdentity(
                 ReadProgress.READING_DG1,
                 ReadProgress.READING_DG2,
                 ReadProgress.READING_DG7,
-                ReadProgress.READING_DG11,
                 ReadProgress.READING_DG14         -> getString(R.string.nfc_reading)
                 ReadProgress.READING_EDATA        -> getString(R.string.nfc_authenticating)
                 ReadProgress.COMPLETE             -> getString(R.string.nfc_done)

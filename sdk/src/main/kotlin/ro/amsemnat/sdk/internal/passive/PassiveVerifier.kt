@@ -80,6 +80,5 @@ private fun dgToNumber(dg: DataGroup): Int = when (dg) {
     DataGroup.DG1 -> 1
     DataGroup.DG2 -> 2
     DataGroup.DG7 -> 7
-    DataGroup.DG11 -> 11
     DataGroup.DG14 -> 14
 }

@@ -12,7 +12,6 @@ import org.jmrtd.lds.ChipAuthenticationPublicKeyInfo
 import org.jmrtd.lds.LDSFile
 import org.jmrtd.lds.PACEInfo
 import org.jmrtd.lds.icao.COMFile
-import org.jmrtd.lds.icao.DG11File
 import org.jmrtd.lds.icao.DG14File
 import org.jmrtd.lds.icao.DG1File
 import org.jmrtd.lds.icao.DG2File
@@ -62,15 +61,11 @@ internal suspend fun readIdentityFromIsoDep(
         var mrzFields: MrzFields? = null
         var faceImage: ByteArray? = null
         var signatureImage: ByteArray? = null
-        var dg11Place: String? = null
-        var dg11Address: String? = null
 
         // Read COM and intersect the caller's requested DGs with what the card
-        // actually advertises. Prevents firing a progress event for a DG that
-        // doesn't exist on the card (e.g. Romanian CEI cards don't ship DG11)
-        // and mirrors the iOS vendored reader's pre-filter behavior. If COM
-        // can't be read, fall back to the caller's set unfiltered — better
-        // to attempt and fail than drop everything.
+        // actually advertises. Mirrors the iOS vendored reader's pre-filter.
+        // If COM can't be read, fall back to the caller's set unfiltered —
+        // better to attempt and fail than drop everything.
         val presentDGs = try {
             val comBytes = passportService
                 .getInputStream(PassportService.EF_COM, PassportService.DEFAULT_MAX_BLOCKSIZE)
@@ -102,12 +97,6 @@ internal suspend fun readIdentityFromIsoDep(
                     DataGroup.DG7 -> {
                         onProgress?.invoke(ReadProgress.READING_DG7)
                         signatureImage = readDG7(passportService)
-                    }
-                    DataGroup.DG11 -> {
-                        onProgress?.invoke(ReadProgress.READING_DG11)
-                        val (place, addr) = readDG11(passportService)
-                        dg11Place = place
-                        dg11Address = addr
                     }
                     DataGroup.DG14 -> {
                         onProgress?.invoke(ReadProgress.READING_DG14)
@@ -192,8 +181,8 @@ internal suspend fun readIdentityFromIsoDep(
             nationality = eData.nationality ?: mrzFields?.nationality,
             documentNumber = eData.documentNumber ?: mrzFields?.documentNumber,
             dateOfExpiry = dateOfExpiry,
-            placeOfBirth = eData.placeOfBirth ?: dg11Place,
-            address = eData.address ?: dg11Address,
+            placeOfBirth = eData.placeOfBirth,
+            address = eData.address,
             issuingAuthority = eData.issuingAuthority,
             issuingDate = issuingDate,
             faceImage = faceImage,
@@ -256,18 +245,6 @@ private fun readDG2(service: PassportService): Pair<ByteArray, ByteArray?> {
 private fun readDG7(service: PassportService): ByteArray? {
     val stream = service.getInputStream(PassportService.EF_DG7, PassportService.DEFAULT_MAX_BLOCKSIZE)
     return DG7File(stream).images.firstOrNull()?.imageInputStream?.readBytes()
-}
-
-private fun readDG11(service: PassportService): Pair<String?, String?> {
-    val stream = service.getInputStream(PassportService.EF_DG11, PassportService.DEFAULT_MAX_BLOCKSIZE)
-    val dg11 = DG11File(stream)
-    val place = dg11.placeOfBirth?.joinToString(", ")?.takeIf { it.isNotEmpty() }
-    val address = try {
-        dg11.permanentAddress?.joinToString(", ")?.takeIf { it.isNotEmpty() }
-    } catch (_: Exception) {
-        null
-    }
-    return place to address
 }
 
 private fun readRawDataGroup(service: PassportService, fileId: Short): ByteArray =

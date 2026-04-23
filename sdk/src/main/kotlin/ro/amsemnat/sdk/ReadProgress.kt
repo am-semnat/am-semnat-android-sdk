@@ -10,7 +10,6 @@ enum class ReadProgress {
     READING_DG1,
     READING_DG2,
     READING_DG7,
-    READING_DG11,
     READING_DG14,
     CHIP_AUTHENTICATING,
     READING_EDATA,

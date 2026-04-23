@@ -4,7 +4,7 @@ package ro.amsemnat.sdk
  * LDS data groups that can be requested from a Romanian CEI eID card.
  *
  * The set passed to [AmSemnat.readIdentity] controls which files are read from the chip. Iteration
- * order follows declaration order here (`DG1 → DG2 → DG7 → DG11 → DG14`), which matters because
+ * order follows declaration order here (`DG1 → DG2 → DG7 → DG14`), which matters because
  * `DG14` must be read before chip authentication.
  *
  * [comTag] is the ICAO LDS tag byte the DG advertises in the card's COM file; used internally to
@@ -19,9 +19,6 @@ enum class DataGroup(internal val comTag: Int) {
 
     /** Displayed signature image. Populates [RomanianIdentity.signatureImage]. */
     DG7(0x67),
-
-    /** Additional personal details (place of birth, address). Populates the matching fields on [RomanianIdentity]. */
-    DG11(0x6B),
 
     /** Chip authentication public keys. Required to set [RomanianIdentity.chipAuthenticated] to `true`. */
     DG14(0x6E);
