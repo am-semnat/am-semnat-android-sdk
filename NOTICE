@@ -1,0 +1,15 @@
+am-semnat-android-sdk
+Copyright 2026 am-semnat contributors
+
+This product includes software developed by third parties:
+
+- JMRTD — https://jmrtd.org
+  Licensed under LGPL-2.1-or-later.
+
+- SCUBA Smart Cards — http://scub.sourceforge.net
+  Licensed under LGPL-2.1.
+
+- Bouncy Castle — https://www.bouncycastle.org
+  Licensed under the Bouncy Castle License (MIT/X11 style).
+
+See LICENSE-THIRD-PARTY for full license text.
