@@ -29,3 +29,14 @@ Initial release.
   `NfcAdapter.disableReaderMode` and the awaiting suspend function
   raises `AmSemnatError.SessionCancelled`. No-op for the `IsoDep`
   overloads — those don't go through the internal session helper.
+
+### Fixed
+
+- `readIdentity` now reads the card's `EF.COM` manifest first and
+  intersects the caller-requested `DataGroup` set with the DGs the card
+  actually advertises. Previously, requesting a DG the card doesn't
+  ship (e.g. DG11 on current Romanian CEI cards) fired a misleading
+  `readingDgN` progress event before the read itself failed silently.
+  Matches the iOS SDK's behavior, which has always pre-filtered against
+  `EF.COM`. If `EF.COM` can't be read the caller's set is used
+  unfiltered — better to attempt the reads than drop them all.

@@ -2,8 +2,8 @@ package ro.amsemnat.sdk
 
 /**
  * Values passed to the `onProgress` callback of [AmSemnat.readIdentity], emitted in order as the
- * NFC session advances. A single read produces a subset of these — variants for data groups the
- * caller didn't request are skipped.
+ * NFC session advances. A single read produces a subset of these — variants are skipped when the
+ * caller didn't request the corresponding [DataGroup] or when the card doesn't advertise it.
  */
 enum class ReadProgress {
     PACE_ESTABLISHING,

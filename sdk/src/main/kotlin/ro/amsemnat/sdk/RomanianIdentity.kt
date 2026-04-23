@@ -1,31 +1,30 @@
 package ro.amsemnat.sdk
 
 /**
- * Flat snapshot of the personal data read from a Romanian CEI eID card, merging fields from the
- * MRZ (DG1), the face and displayed-signature images (DG2, DG7), personal-details groups (DG11),
- * and the national eDATA applet.
+ * Flat snapshot of the personal data read from a Romanian CEI eID card.
  *
  * **All string fields are nullable.** Consumers choose which data groups to read via the
  * `dataGroups` argument on [AmSemnat.readIdentity]; fields sourced from groups that were not
  * requested — or that are absent on a given card — come back as `null`.
  *
  * Field provenance:
- * - MRZ (DG1) → [documentNumber], [dateOfExpiry], [sex], [nationality], and seed values for [firstName]/[lastName]/[dateOfBirth]
+ * - MRZ (DG1) → [documentNumber], [dateOfExpiry], [sex], [nationality], [firstName], [lastName], [dateOfBirth]
  * - DG2 → [faceImage]
  * - DG7 → [signatureImage]
- * - DG11 → [placeOfBirth], [address] (and higher-quality [firstName]/[lastName])
- * - National eDATA applet → [cnp], [issuingAuthority], [issuingDate], canonical address
+ * - eDATA applet (PIN1) → [cnp], [issuingAuthority], [issuingDate], [address], [placeOfBirth]
  *
- * @property cnp 13-digit national identification number. Requires the national eDATA applet (PIN1).
- * @property firstName Given name(s). UTF-8 from DG11 when present, otherwise MRZ-derived.
- * @property lastName Family name. UTF-8 from DG11 when present, otherwise MRZ-derived.
- * @property dateOfBirth ISO-8601 `YYYY-MM-DD` when expandable from MRZ/DG11, otherwise `null`.
+ * @property cnp 13-digit national identification number. From the eDATA applet (PIN1).
+ * @property firstName Given name(s). MRZ-derived (ASCII-transliterated uppercase).
+ * @property lastName Family name. MRZ-derived (ASCII-transliterated uppercase).
+ * @property dateOfBirth ISO-8601 `YYYY-MM-DD` derived from the MRZ.
  * @property sex `"M"` or `"F"` as recorded in the MRZ.
  * @property nationality Three-letter country code from the MRZ (e.g. `"ROU"`).
  * @property documentNumber Card number from the MRZ.
  * @property dateOfExpiry ISO-8601 `YYYY-MM-DD` derived from the MRZ.
- * @property placeOfBirth Free-form locality string from DG11.
- * @property address Free-form postal address from DG11 or the eDATA applet.
+ * @property placeOfBirth Free-form locality string from the eDATA applet (PIN1); `null`
+ *   if `pin1` was empty or eDATA read failed.
+ * @property address Free-form postal address from the eDATA applet (PIN1); `null`
+ *   if `pin1` was empty or eDATA read failed.
  * @property issuingAuthority Issuer name from the eDATA applet.
  * @property issuingDate ISO-8601 `YYYY-MM-DD` issuance date from the eDATA applet.
  * @property faceImage Raw encoded face image bytes from DG2 (JPEG or JPEG 2000).

@@ -9,7 +9,9 @@ import org.jmrtd.PACEKeySpec
 import org.jmrtd.PassportService
 import org.jmrtd.lds.ChipAuthenticationInfo
 import org.jmrtd.lds.ChipAuthenticationPublicKeyInfo
+import org.jmrtd.lds.LDSFile
 import org.jmrtd.lds.PACEInfo
+import org.jmrtd.lds.icao.COMFile
 import org.jmrtd.lds.icao.DG11File
 import org.jmrtd.lds.icao.DG14File
 import org.jmrtd.lds.icao.DG1File
@@ -63,7 +65,26 @@ internal suspend fun readIdentityFromIsoDep(
         var dg11Place: String? = null
         var dg11Address: String? = null
 
-        for (group in dataGroups) {
+        // Read COM and intersect the caller's requested DGs with what the card
+        // actually advertises. Prevents firing a progress event for a DG that
+        // doesn't exist on the card (e.g. Romanian CEI cards don't ship DG11)
+        // and mirrors the iOS vendored reader's pre-filter behavior. If COM
+        // can't be read, fall back to the caller's set unfiltered — better
+        // to attempt and fail than drop everything.
+        val presentDGs = try {
+            val comBytes = passportService
+                .getInputStream(PassportService.EF_COM, PassportService.DEFAULT_MAX_BLOCKSIZE)
+                .readBytes()
+            COMFile(ByteArrayInputStream(comBytes)).tagList.toSet()
+        } catch (e: Exception) {
+            logger?.debug("COM read failed; reading all requested DGs without filter: ${e.message}")
+            null
+        }
+        val effectiveDGs = if (presentDGs == null) dataGroups else dataGroups.filter { it.comTag in presentDGs }.toSet()
+        val skipped = dataGroups - effectiveDGs
+        if (skipped.isNotEmpty()) logger?.debug("DGs not listed in COM, skipping: $skipped")
+
+        for (group in effectiveDGs) {
             try {
                 when (group) {
                     DataGroup.DG1 -> {
@@ -106,7 +127,7 @@ internal suspend fun readIdentityFromIsoDep(
         }
 
         var chipAuthenticated = false
-        if (rawDg14 != null || DataGroup.DG14 in dataGroups) {
+        if (rawDg14 != null || DataGroup.DG14 in effectiveDGs) {
             onProgress?.invoke(ReadProgress.CHIP_AUTHENTICATING)
             try {
                 val dg14Bytes = rawDg14 ?: readRawDataGroup(passportService, PassportService.EF_DG14).also {
@@ -153,19 +174,28 @@ internal suspend fun readIdentityFromIsoDep(
 
         onProgress?.invoke(ReadProgress.COMPLETE)
 
+        // Date normalization: MRZ dates are YYMMDD; eDATA dates are DDMMYYYY.
+        // Both get expanded to YYYY-MM-DD. MRZ wins when parseable — checksum-
+        // protected, and matches the eDATA value on CEI cards anyway.
+        val dateOfBirth = isoDateFromMrzSixDigit(mrzFields?.dateOfBirth, DateWindow.BIRTH)
+            ?: isoDateFromEDataDDMMYYYY(eData.dateOfBirth)
+        val dateOfExpiry = isoDateFromMrzSixDigit(mrzFields?.dateOfExpiry, DateWindow.FUTURE)
+            ?: isoDateFromEDataDDMMYYYY(eData.dateOfExpiry)
+        val issuingDate = isoDateFromEDataDDMMYYYY(eData.issuingDate)
+
         RomanianIdentity(
             cnp = eData.cnp ?: mrzFields?.cnp,
             firstName = eData.firstName ?: mrzFields?.firstName,
             lastName = eData.lastName ?: mrzFields?.lastName,
-            dateOfBirth = eData.dateOfBirth ?: mrzFields?.dateOfBirth,
+            dateOfBirth = dateOfBirth,
             sex = eData.sex ?: mrzFields?.sex,
             nationality = eData.nationality ?: mrzFields?.nationality,
             documentNumber = eData.documentNumber ?: mrzFields?.documentNumber,
-            dateOfExpiry = eData.dateOfExpiry ?: mrzFields?.dateOfExpiry,
+            dateOfExpiry = dateOfExpiry,
             placeOfBirth = eData.placeOfBirth ?: dg11Place,
             address = eData.address ?: dg11Address,
             issuingAuthority = eData.issuingAuthority,
-            issuingDate = eData.issuingDate,
+            issuingDate = issuingDate,
             faceImage = faceImage,
             signatureImage = signatureImage,
             chipAuthenticated = chipAuthenticated,

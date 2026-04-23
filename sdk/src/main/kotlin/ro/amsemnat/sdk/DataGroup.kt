@@ -6,22 +6,25 @@ package ro.amsemnat.sdk
  * The set passed to [AmSemnat.readIdentity] controls which files are read from the chip. Iteration
  * order follows declaration order here (`DG1 → DG2 → DG7 → DG11 → DG14`), which matters because
  * `DG14` must be read before chip authentication.
+ *
+ * [comTag] is the ICAO LDS tag byte the DG advertises in the card's COM file; used internally to
+ * filter requested DGs against what the card actually ships.
  */
-enum class DataGroup {
+enum class DataGroup(internal val comTag: Int) {
     /** Machine-readable zone: document number, name, date of birth, sex, expiry, nationality. */
-    DG1,
+    DG1(0x61),
 
     /** Encoded face image (JPEG/JP2). Populates [RomanianIdentity.faceImage]. */
-    DG2,
+    DG2(0x75),
 
     /** Displayed signature image. Populates [RomanianIdentity.signatureImage]. */
-    DG7,
+    DG7(0x67),
 
     /** Additional personal details (place of birth, address). Populates the matching fields on [RomanianIdentity]. */
-    DG11,
+    DG11(0x6B),
 
     /** Chip authentication public keys. Required to set [RomanianIdentity.chipAuthenticated] to `true`. */
-    DG14;
+    DG14(0x6E);
 
     companion object {
         /**
