@@ -115,36 +115,39 @@ internal suspend fun readIdentityFromIsoDep(
             logger?.debug("SOD read failed: ${e.message}")
         }
 
+        // Always attempt chip auth, regardless of whether the caller requested
+        // DG14. Matches the iOS vendored `PassportReader`, which reads DG14 and
+        // runs EAC-CA whenever `skipCA` is false (the default). If the card
+        // lacks DG14 or EAC-CA fails the catch keeps it silent — the field is
+        // a best-effort local-trust signal, not an error source.
         var chipAuthenticated = false
-        if (rawDg14 != null || DataGroup.DG14 in effectiveDGs) {
-            onProgress?.invoke(ReadProgress.CHIP_AUTHENTICATING)
-            try {
-                val dg14Bytes = rawDg14 ?: readRawDataGroup(passportService, PassportService.EF_DG14).also {
-                    rawDg14 = it
-                }
-                val dg14SecurityInfos = DG14File(ByteArrayInputStream(dg14Bytes)).securityInfos
-
-                val chipAuthInfo = dg14SecurityInfos
-                    .filterIsInstance<ChipAuthenticationInfo>()
-                    .firstOrNull()
-
-                val chipAuthPubKeyInfo = dg14SecurityInfos
-                    .filterIsInstance<ChipAuthenticationPublicKeyInfo>()
-                    .firstOrNull()
-
-                if (chipAuthPubKeyInfo != null) {
-                    val keyId: BigInteger? = chipAuthInfo?.keyId ?: chipAuthPubKeyInfo.keyId
-                    val oid: String = chipAuthInfo?.objectIdentifier
-                        ?: chipAuthPubKeyInfo.objectIdentifier
-                    val publicKeyOID: String = chipAuthPubKeyInfo.objectIdentifier
-                    val publicKey: PublicKey = chipAuthPubKeyInfo.subjectPublicKey
-
-                    passportService.doEACCA(keyId, oid, publicKeyOID, publicKey)
-                    chipAuthenticated = true
-                }
-            } catch (e: Exception) {
-                logger?.debug("Chip authentication failed: ${e.message}")
+        onProgress?.invoke(ReadProgress.CHIP_AUTHENTICATING)
+        try {
+            val dg14Bytes = rawDg14 ?: readRawDataGroup(passportService, PassportService.EF_DG14).also {
+                rawDg14 = it
             }
+            val dg14SecurityInfos = DG14File(ByteArrayInputStream(dg14Bytes)).securityInfos
+
+            val chipAuthInfo = dg14SecurityInfos
+                .filterIsInstance<ChipAuthenticationInfo>()
+                .firstOrNull()
+
+            val chipAuthPubKeyInfo = dg14SecurityInfos
+                .filterIsInstance<ChipAuthenticationPublicKeyInfo>()
+                .firstOrNull()
+
+            if (chipAuthPubKeyInfo != null) {
+                val keyId: BigInteger? = chipAuthInfo?.keyId ?: chipAuthPubKeyInfo.keyId
+                val oid: String = chipAuthInfo?.objectIdentifier
+                    ?: chipAuthPubKeyInfo.objectIdentifier
+                val publicKeyOID: String = chipAuthPubKeyInfo.objectIdentifier
+                val publicKey: PublicKey = chipAuthPubKeyInfo.subjectPublicKey
+
+                passportService.doEACCA(keyId, oid, publicKeyOID, publicKey)
+                chipAuthenticated = true
+            }
+        } catch (e: Exception) {
+            logger?.debug("Chip authentication failed: ${e.message}")
         }
 
         var eData = EData()

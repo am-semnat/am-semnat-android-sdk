@@ -7,7 +7,20 @@ Version numbers ship in lockstep with the sibling SDKs
 (`am-semnat-ios-sdk`, `@amsemnat/expo-sdk`, `@amsemnat/verifier-node`)
 through the 0.x cycle.
 
-## 0.1.0-SNAPSHOT — unreleased
+## 0.1.1 — unreleased
+
+### Fixed
+
+- `readIdentity` now always attempts chip authentication, regardless of
+  whether `DataGroup.DG14` is in the requested `dataGroups` set. Matches
+  the iOS SDK's vendored `PassportReader`, which reads DG14 and runs
+  EAC-CA whenever `skipCA` is false (the default). Previously, Android
+  callers that didn't explicitly request `DG14` received
+  `RomanianIdentity.chipAuthenticated = false` on cards that actually
+  support it. Failure remains silent — `chipAuthenticated` stays `false`,
+  no new error variant.
+
+## 0.1.0 — 2026-04-24
 
 Initial release.
 

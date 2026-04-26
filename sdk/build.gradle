@@ -97,7 +97,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
-    coordinates('ro.amsemnat', 'am-semnat-sdk', '0.1.0')
+    coordinates('ro.amsemnat', 'am-semnat-sdk', '0.1.1')
 
     configure(new AndroidSingleVariantLibrary('release', true, true))
 
