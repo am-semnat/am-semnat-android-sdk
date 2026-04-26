@@ -121,11 +121,12 @@ internal suspend fun readIdentityFromIsoDep(
         // lacks DG14 or EAC-CA fails the catch keeps it silent — the field is
         // a best-effort local-trust signal, not an error source.
         var chipAuthenticated = false
-        onProgress?.invoke(ReadProgress.CHIP_AUTHENTICATING)
         try {
-            val dg14Bytes = rawDg14 ?: readRawDataGroup(passportService, PassportService.EF_DG14).also {
-                rawDg14 = it
+            val dg14Bytes = rawDg14 ?: run {
+                onProgress?.invoke(ReadProgress.READING_DG14)
+                readRawDataGroup(passportService, PassportService.EF_DG14).also { rawDg14 = it }
             }
+            onProgress?.invoke(ReadProgress.CHIP_AUTHENTICATING)
             val dg14SecurityInfos = DG14File(ByteArrayInputStream(dg14Bytes)).securityInfos
 
             val chipAuthInfo = dg14SecurityInfos
