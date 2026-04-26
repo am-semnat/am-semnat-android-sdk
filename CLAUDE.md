@@ -23,12 +23,14 @@ Single-module Gradle project (`:sdk`), no app, no instrumented tests.
 ./gradlew :sdk:assembleRelease     # compile + package .aar
 ./gradlew :sdk:test                # unit tests (pure JVM)
 ./gradlew :sdk:lint
-./gradlew :sdk:publishToMavenLocal # 0.1.0-SNAPSHOT → ~/.m2
+./gradlew :sdk:publishToMavenLocal # current version → ~/.m2 (entry point for the AM_SEMNAT_LOCAL=1 loopback)
 ```
 
 Requires JDK 17+ (Android Studio's bundled JBR works) and Android SDK 36.
 NFC paths aren't covered in CI — verified manually against a real card via
-the am-semnat app after integration. `PassiveVerifier` self-generates its
+the am-semnat app after integration. The end-to-end loop for testing an
+unpublished AAR change against the consumer app is documented in
+`../research/local-dev-loopback.md`. `PassiveVerifier` self-generates its
 CMS fixtures with BouncyCastle, so no pre-baked test vectors.
 
 ## Layout
