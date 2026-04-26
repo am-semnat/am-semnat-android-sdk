@@ -7,7 +7,7 @@ Version numbers ship in lockstep with the sibling SDKs
 (`am-semnat-ios-sdk`, `@amsemnat/expo-sdk`, `@amsemnat/verifier-node`)
 through the 0.x cycle.
 
-## 0.1.1 — unreleased
+## 0.1.1 — 2026-04-26
 
 ### Fixed
 
@@ -19,6 +19,13 @@ through the 0.x cycle.
   `RomanianIdentity.chipAuthenticated = false` on cards that actually
   support it. Failure remains silent — `chipAuthenticated` stays `false`,
   no new error variant.
+- `ReadProgress.READING_DG14` is now emitted when the chip-auth fallback
+  reads DG14 (i.e. when the caller didn't include it in `dataGroups`).
+  Previously the fallback read was silent and consumer progress UIs
+  showed the step as never-reached, even though chip auth ran. Also,
+  `CHIP_AUTHENTICATING` now fires only after DG14 bytes are in hand —
+  if the DG14 read itself fails, neither event fires, which is more
+  honest than claiming to authenticate without the material.
 
 ## 0.1.0 — 2026-04-24
 
