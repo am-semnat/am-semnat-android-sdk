@@ -4,7 +4,7 @@ All notable changes to `ro.amsemnat:am-semnat-sdk` are documented in this file.
 
 The format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Version numbers ship in lockstep with the sibling SDKs
-(`am-semnat-ios-sdk`, `@amsemnat/expo-sdk`, `@amsemnat/verifier-node`)
+(`am-semnat-ios-sdk`, `@amsemnat/expo-sdk`, `@amsemnat/verifier`)
 through the 0.x cycle.
 
 ## 0.1.1 — 2026-04-26

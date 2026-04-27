@@ -177,8 +177,8 @@ Two questions with two different answers:
 
   The SDK exposes raw bytes on `RomanianIdentity` (`rawSod`, `rawDg1`,
   `rawDg2`, `rawDg14`) that you can upload and verify wherever the decision
-  actually matters. A companion `@amsemnat/verifier-node` reference
-  implementation is on the roadmap.
+  actually matters. A companion `@amsemnat/verifier` reference
+  implementation is on npm.
 
   For offline / research / air-gapped use, the SDK ships
   `AmSemnat.verifyPassiveOffline(rawSod, dataGroups, trustAnchors)`. The caller

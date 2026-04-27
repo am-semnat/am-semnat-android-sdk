@@ -13,7 +13,7 @@ this SDK.
 The public surface is **frozen** for 0.x. Don't change type names, method
 signatures, enum variants, or `AmSemnatError` cases without updating the
 iOS / Expo / verifier siblings (future `../ios/`, `../expo/`,
-`../verifier-node/`) in lockstep — they ship API-compatible symbols.
+`../verifier/`) in lockstep — they ship API-compatible symbols.
 
 ## Build & test
 
